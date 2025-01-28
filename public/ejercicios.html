@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Tracker - Bienvenido</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col justify-center transition-all">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div id="mobile-menu" class="hidden md:flex md:flex-col md:w-64 bg-gray-800">
+            <div class="flex flex-col flex-grow">
+                <nav class="flex-1 space-y-2">
+                    <a href="index.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Inicio</a>
+                    <a href="calendar.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Calendar</a>
+                    <a href="usuario.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Usuario</a>
+                    <a href="ejercicios.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Ejercicios</a>
+                    <a href="configuracion.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Configuracion</a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex flex-1 flex-col">
+            <!-- Navbar -->
+            <nav class="bg-gray-800 text-white">
+                <div class="flex justify-between items-center px-4 py-3">
+                    <button onclick="history.back()" class="bg-gray-700 px-3 py-2 rounded-md">
+                        ←
+                    </button>
+                    <h1 id="welcome-title" class="text-xl font-bold">Gestion de ejercicios</h1>
+                    <button id="mobile-menu-toggle" class="text-white bg-gray-600 md:hidden px-4 py-2 rounded flex items-center">
+                        ≡
+                    </button>
+                </div>
+            </nav>
+            <script src="sidebar.js"></script>
+
+            <!-- Page Content -->
+            <main class="flex-1 p-6">
+                <h2 class="text-xl font-bold mb-4">Registrar nombre de ejercicio</h2>
+                <form id="add-exercise-form">
+                    <span class="block text-sm font-medium text-slate-700">Nombre del Ejercicio</span>
+                    <input type="text" placeholder="Nombre del ejercicio" id="add-exercise-input" class="border p-2 mb-2 w-full">
+                    <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded w-full">Guardar</button>
+                </form>
+                <!-- Sección para mostrar todos los ejercicios guardados -->
+                <h2 class="text-xl font-bold mt-8 mb-4">Lista de ejercicios</h2>
+                <div id="exercise-list" class="bg-white p-4 rounded shadow">
+                    <!-- Aquí se insertarán los ejercicios -->
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        // Guardar nuevo ejercicio
+        document.getElementById('add-exercise-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const exerciseData = {
+                name: document.getElementById('add-exercise-input').value,
+            };
+
+            fetch('/api/exercise_names', {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(exerciseData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('Ejercicio guardado');
+                    document.getElementById('add-exercise-input').value = ''; // Limpiar el input
+                    fetchExercises(); // Actualizar la lista de ejercicios
+                }
+            })
+            .catch(err => console.error('Error:', err));
+        });
+
+        // Obtener y mostrar todos los ejercicios
+        function fetchExercises() {
+            fetch('/api/exercise_names')
+                .then(response => response.json())
+                .then(data => {
+                    const exerciseList = document.getElementById('exercise-list');
+                    exerciseList.innerHTML = ''; // Limpiar la lista
+
+                    if (data.length === 0) {
+                        exerciseList.innerHTML = '<p class="text-gray-500">No hay ejercicios guardados.</p>';
+                        return;
+                    }
+
+                    data.forEach(exercise => {
+                        const exerciseItem = document.createElement('div');
+                        exerciseItem.className = 'flex justify-between items-center p-2 border-b';
+                        exerciseItem.innerHTML = `
+                            <span>${exercise.name}</span>
+                            <div>
+                                <button onclick="editExercise(${exercise.id}, '${exercise.name}')" class="bg-blue-500 text-white px-3 py-1 rounded mr-2">Editar</button>
+                                <button onclick="deleteExercise(${exercise.id})" class="bg-red-500 text-white px-3 py-1 rounded">Eliminar</button>
+                            </div>
+                        `;
+                        exerciseList.appendChild(exerciseItem);
+                    });
+                })
+                .catch(err => console.error('Error al obtener los ejercicios:', err));
+        }
+
+        // Eliminar un ejercicio
+        function deleteExercise(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este ejercicio?')) {
+                fetch(`/api/exercise_names/${id}`, {
+                    method: 'DELETE',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert('Ejercicio eliminado');
+                        fetchExercises(); // Actualizar la lista
+                    }
+                })
+                .catch(err => console.error('Error al eliminar el ejercicio:', err));
+            }
+        }
+
+        // Editar un ejercicio
+        function editExercise(id, currentName) {
+            const newName = prompt('Editar el nombre del ejercicio:', currentName);
+            if (newName && newName !== currentName) {
+                fetch(`/api/exercise_names/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert('Ejercicio actualizado');
+                        fetchExercises(); // Actualizar la lista
+                    }
+                })
+                .catch(err => console.error('Error al actualizar el ejercicio:', err));
+            }
+        }
+
+        // Cargar ejercicios al inicio
+        window.onload = function() {
+            fetchExercises();
+        };
+    </script>
+</body>
+</html>

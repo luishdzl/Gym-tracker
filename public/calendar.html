@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario - Gym Tracker</title>
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col justify-center transition-all">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div id="mobile-menu" class="hidden md:flex md:flex-col md:w-64 bg-gray-800">
+            <div class="flex flex-col flex-grow">
+                <nav class="flex-1 space-y-2">
+                    <a href="index.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Inicio</a>
+                    <a href="calendar.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Calendar</a>
+                    <a href="usuario.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Usuario</a>
+                    <a href="ejercicios.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Ejercicios</a>
+                    <a href="configuracion.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Configuracion</a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex flex-1 flex-col">
+            <!-- Navbar -->
+            <nav class="bg-gray-800 text-white">
+                <div class="flex justify-between items-center px-4 py-3">
+                    <button onclick="history.back()" class="bg-gray-700 px-3 py-2 rounded-md">
+                        ←
+                    </button>
+                    <h1 id="welcome-title" class="text-xl font-bold">Registro del Diario</h1>
+                    <button id="mobile-menu-toggle" class="text-white bg-gray-600 md:hidden px-4 py-2 rounded flex items-center">
+                        ≡
+                    </button>
+                </div>
+            </nav>
+            <script src="sidebar.js"></script>
+            <main class="p-4" style="max-height: 90%;">
+                <div id="calendar" class="bg-white rounded shadow p-4" style="max-height: 100%;"></div>
+            </main>
+        </div>
+    </div>
+
+    <script src="external/fullcalendar/dist/index.global.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                dateClick: function(info) {
+                    // Redirige al formulario para ese día
+                    window.location.href = `form.html?date=${info.dateStr}`;
+                }
+            });
+            calendar.render();
+        });
+
+    </script>
+</body>
+</html>

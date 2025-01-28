@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Diario</title>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col justify-center transition-all">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div id="mobile-menu" class="hidden md:flex md:flex-col md:w-64 bg-gray-800">
+            <div class="flex flex-col flex-grow">
+                <nav class="flex-1 space-y-2">
+                    <a href="index.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Inicio</a>
+                    <a href="calendar.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Calendar</a>
+                    <a href="usuario.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Usuario</a>
+                    <a href="ejercicios.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Ejercicios</a>
+                    <a href="configuracion.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Configuracion</a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex flex-1 flex-col">
+            <!-- Navbar -->
+            <nav class="bg-gray-800 text-white">
+                <div class="flex justify-between items-center px-4 py-3">
+                    <button onclick="history.back()" class="bg-gray-700 px-3 py-2 rounded-md">
+                        ←
+                    </button>
+                    <h1 id="welcome-title" class="text-xl font-bold">Registro del Diario </h1>   
+                    <p id="fecha_date" class="text-xl font-bold"></p>
+                    <button id="mobile-menu-toggle" class="text-white bg-gray-600 md:hidden px-4 py-2 rounded flex items-center">
+                        ≡
+                    </button>
+                </div>
+            </nav>
+            <script src="sidebar.js"></script>
+            <main class="p-2">
+                <!-- Botones para abrir los modales -->
+                <div class="flex flex-wrap gap-4 justify-center">
+                    <button id="open-exercise-modal" class="bg-blue-500 text-white py-2 px-4 rounded w-full sm:w-auto">
+                        Ejercicios
+                    </button>
+                    <button id="open-food-modal" class="bg-green-500 text-white py-2 px-4 rounded w-full sm:w-auto">
+                        Alimentos
+                    </button>
+                    <button id="open-water-modal" class="bg-blue-300 text-white py-2 px-4 rounded w-full sm:w-auto">
+                        Hidratación
+                    </button>
+                    <button id="open-sleep-modal" class="bg-purple-500 text-white py-2 px-4 rounded w-full sm:w-auto">
+                        Sueño
+                    </button>
+                </div>
+
+
+    <!-- Sección de modales -->
+    <section class="apear-modal p-2 flex flex-wrap gap-4 justify-center">
+        <!-- Modal de Ejercicios -->
+        <div id="exercise-modal" class="hidden bg-white p-2 rounded shadow-lg w-full max-w-4xl">
+            <button id="close-exercise-modal" type="button" class="justify-self-end rounded-md text-gray-300 bg-red-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
+                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            <div id="exercise-modalmmm" class="md:flex">
+            <div class="flex flex-col lg:flex-row gap-4">
+                <!-- Formulario -->
+
+                <div class="flex-1 p-2 border rounded">
+
+                    <h2 class="text-xl font-bold mb-2">Registrar Ejercicios</h2>
+                    <button id="open-add-exercise" class="bg-blue-500 rounded text-white p-2 w-full">Agregar Ejercicios +</button>
+                    <form id="exercise-form">
+                        <input type="number" hidden value="" class="Date_to_database" name="date_id" id="date_id">
+                        <span class="block text-sm font-medium mt-4 text-slate-700">Tipo de Ejercicio</span>
+                        <div class="flex">
+                            <select id="exercise" class="border p-2 mb-2 w-full">
+                                <option value="" selected>Seleccionar Ejercicio</option>
+                            </select>
+                        </div>
+                        <span class="block text-sm font-medium mt-1 text-slate-700">Peso usado</span>
+                        <input type="number" placeholder="Peso (kg)" id="weight" class="border p-2 mb-2 w-full">
+                        <span class="block text-sm font-medium mt-1 text-slate-700">Repeticiones hechas</span>
+                        <input type="number" placeholder="Repeticiones" id="reps" class="border p-2 mb-2 w-full">
+                        <span class="block text-sm font-medium mt-1 text-slate-700">Series realizadas</span>
+                        <input type="number" placeholder="Series" id="sets" class="border p-2 mb-2 w-full">
+                        <span class="block text-sm font-medium mt-1 text-slate-700">RIR</span>
+                        <input type="number" placeholder="RIR" id="rir" class="border p-2 mb-2 w-full">
+                        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded w-full">Guardar</button>
+                    </form>
+                </div>
+        
+
+            </div>
+                            <!-- Datos previamente ingresados -->
+                            <div class="flex-1 p-4 rounded">
+                                <h2 class="text-lg font-semibold">Datos Previamente Ingresados</h2>
+                                <table class="w-full border-collapse border shadow-lg border-slate-300 mt-4">
+                                  <thead class="bg-gray-100">
+                                    <tr>
+                                      <th class="border border-slate-300 p-2">Ejercicio</th>
+                                      <th class="border border-slate-300 p-2">Peso</th>
+                                      <th class="border border-slate-300 p-2">Reps</th>
+                                      <th class="border border-slate-300 p-2">Series</th>
+                                      <th class="border border-slate-300 p-2">RIR</th>
+                                      <th class="border border-slate-300 p-2">Acciones</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody id="data-list">
+                                    <!-- Aquí se agregarán los datos dinámicamente -->
+                                  </tbody>
+                                </table>
+                              </div>
+                              
+            </div>
+        </div>
+        
+
+
+        <!-- Modal de Alimentos -->
+        <div id="food-modal" class="hidden bg-white p-4 rounded shadow-lg w-full max-w-md">
+            <button id="close-food-modal" type="button" class="justify-self-end rounded-md text-gray-300 bg-red-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
+                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            <h2 class="text-xl font-bold mb-4">Registrar Alimentos</h2>
+            <p id="food_data_previus"></p>
+            <form id="food-form">
+                <input type="number" hidden value="" class="Date_to_database" name="date_id" id="date_id">
+                <span class="block text-sm font-medium text-slate-700">Calorias consumidas</span>
+                <input type="number" placeholder="Calorias (kcal)" id="kcal" class="border p-2 mb-2 w-full">
+                <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded w-full">Guardar</button>
+            </form>
+                                        <!-- Datos previamente ingresados -->
+                                        <div class="flex-1 p-4 border rounded">
+                                            <h2 class="text-lg font-semibold">Datos Previamente Ingresados</h2>
+                                            <table class="w-full border-collapse border border-slate-300 mt-4">
+                                              <thead class="bg-gray-100">
+                                                <tr>
+                                                  <th class="border border-slate-300 p-2">Calorias</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody id="data-list-food">
+                                                <!-- Aquí se agregarán los datos dinámicamente -->
+                                              </tbody>
+                                            </table>
+                                          </div>
+        </div>
+
+        <!-- Modal de Hidratación -->
+        <div id="water-modal" class="hidden bg-white p-4 rounded shadow-lg w-full max-w-md">
+            <button id="close-water-modal" type="button" class="justify-self-end rounded-md text-gray-300 bg-red-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
+                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            <h2 class="text-xl font-bold mb-4">Registrar Hidratación</h2>
+            <form id="water-form">
+                <input type="number" hidden value="" class="Date_to_database" name="date_id" id="date_id">
+                <span class="block text-sm font-medium text-slate-700">Cantidad de agua</span>
+                <input type="number" step="0.1" placeholder="Litros de agua" id="water" class="border p-2 mb-2 w-full">
+                <button type="submit" class="bg-blue-300 text-white py-2 px-4 rounded w-full">Guardar</button>
+            </form>
+               <!-- Datos previamente ingresados -->
+              <div class="flex-1 p-4 border rounded">
+                 <h2 class="text-lg font-semibold">Datos Previamente Ingresados</h2>
+                     <table class="w-full border-collapse border border-slate-300 mt-4">
+                        <thead class="bg-gray-100">
+                   <tr>
+                  <th class="border border-slate-300 p-2">Litros de agua</th>
+                          </tr>
+                    </thead>
+                        <tbody id="data-list-water">
+                      <!-- Aquí se agregarán los datos dinámicamente -->
+                        </tbody>
+                   </table>
+                   </div>
+        </div>
+
+        <!-- Modal de Sueño -->
+        <div id="sleep-modal" class="hidden bg-white p-4 rounded shadow-lg w-full max-w-md">
+            <button id="close-sleep-modal" type="button" class="justify-self-end rounded-md text-gray-300 bg-red-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
+                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            <h2 class="text-xl font-bold mb-4">Registrar Sueño</h2>
+            <form id="sleep-form">
+                <input type="number" hidden value="" class="Date_to_database" name="date_id" id="date_id">
+                <span class="block text-sm font-medium text-slate-700">¿Cuantas horas dormiste?</span>
+                <input type="number" step="0.1" placeholder="Horas de sueño" id="sleep" class="border p-2 mb-2 w-full">
+                <button type="submit" class="bg-purple-500 text-white py-2 px-4 rounded w-full">Guardar</button>
+            </form>
+               <!-- Datos previamente ingresados -->
+               <div class="flex-1 p-4 border rounded">
+                <h2 class="text-lg font-semibold">Datos Previamente Ingresados</h2>
+                    <table class="w-full border-collapse border border-slate-300 mt-4">
+                       <thead class="bg-gray-100">
+                  <tr>
+                 <th class="border border-slate-300 p-2">Litros de agua</th>
+                         </tr>
+                   </thead>
+                       <tbody id="data-list-sleep">
+                     <!-- Aquí se agregarán los datos dinámicamente -->
+                       </tbody>
+                  </table>
+                  </div>        
+        </div>
+    </section>
+                    <!-- agregar ejercicio -->
+                    <div id="add-exercise" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                        
+                        <div class="bg-white p-4 rounded shadow-lg w-full max-w-md">
+                            <div class="w-full grid justify-items-stretch">
+                            <button id="close-add-exercise" type="button" class="justify-self-end rounded-md text-gray-300 bg-red-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
+
+                                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+</div>
+                            <h2 class="text-xl font-bold mb-4">Registrar nombre de ejercicio</h2>
+                            <form id="add-exercise-form">
+                                <span class="block text-sm font-medium text-slate-700">Nombre del Ejercicio</span>
+                                <input type="text" placeholder="Nombre del ejercicio" id="add-exercise-input" class="border p-2 mb-2 w-full">
+                                <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded w-full">Guardar</button>
+                            </form>
+                        </div>
+                    </div>
+
+
+
+<!-- Modales de formulario-->
+    <script src="form/modals-form.js"></script>
+
+            </main>
+        </div>
+    </div>
+    <!-- Ruta de formulario de agregar tipo ejercicios y modal agregar tipo de ejercicio-->
+    <script src="form/form-add-new-exercise.js"></script>
+    <script src="form/form-add-new-exercise-modal.js"></script>
+<!-- <script src="form/form-exercices.js"></script>-->
+
+
+ <!--fecha-->
+ <script>
+    // Obtener la fecha del enlace
+    const urlParams = new URLSearchParams(window.location.search);
+    const date = urlParams.get('date');
+  
+    if (date) {
+      // Enviar fecha al backend para registrar u obtener su ID
+      fetch('http://localhost:3000/api/dates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.id) {
+            // Mostrar el ID y la fecha en un <p>
+            document.getElementById('fecha_date').textContent = `${date}`;
+
+                      // Obtener todos los inputs con clase Date_to_database
+          const inputs = document.querySelectorAll('.Date_to_database');
+          
+          // Establecer el valor de data.id en cada input
+          inputs.forEach((input) => {
+            input.value = data.id;
+          });
+        } else {
+            console.error('Error al obtener la fecha:', data);
+          }
+        })
+        .catch((error) => console.error('Error:', error));
+    } else {
+      console.error('No se encontró la fecha en el enlace');
+    }
+  </script>
+  <script>
+        // Cargar los nombres de los ejercicios desde el servidor 
+        document.addEventListener("DOMContentLoaded", function () {
+  fetch("http://localhost:3000/api/exercise_names")
+    .then((response) => response.json())
+    .then((exercises) => {
+      const select = document.getElementById("exercise");
+      exercises.forEach((exercise) => {
+        const option = document.createElement("option");
+        option.value = exercise.id; // ID como valor
+        option.textContent = exercise.name; // Nombre como texto
+        select.appendChild(option);
+      });
+    })
+    .catch((error) => {
+      console.error("Error al cargar los ejercicios:", error);
+    });
+});
+
+  </script>
+<!--Registro de workouts-->
+  <script>
+document.getElementById("exercise-form").addEventListener("submit", function (event) {
+  // Si deseas que la página se recargue tras enviar el formulario, puedes eliminar esta línea
+event.preventDefault(); 
+
+  // Obtener el valor de `date_id`
+  const dateId = document.getElementById("date_id").value;
+
+  // Guardar `date_id` en el almacenamiento local
+  localStorage.setItem("date_id", dateId);
+
+  // Obtener los valores del formulario
+  const exercise = document.getElementById("exercise").value;
+  const weight = document.getElementById("weight").value;
+  const reps = document.getElementById("reps").value;
+  const sets = document.getElementById("sets").value;
+  const rir = document.getElementById("rir").value;
+
+  // Validar los datos
+  if (!dateId || !exercise || !weight || !reps || !sets || !rir) {
+    alert("Todos los campos son obligatorios.");
+    return;
+  }
+
+  // Enviar los datos al servidor
+  fetch("http://localhost:3000/api/workouts", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      date_id: dateId,
+      exercise_id: exercise,
+      weight: weight,
+      reps: reps,
+      sets: sets,
+      rir: rir,
+    }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Error al guardar el ejercicio.");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Mantener `date_id` y limpiar el resto del formulario
+      document.getElementById("exercise-form").reset();
+      document.getElementById("date_id").value = dateId; // Rellenar el valor después de limpiar
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Hubo un problema al guardar el ejercicio.");
+    });
+});
+
+// Rellenar automáticamente `date_id` al cargar la página
+document.addEventListener("DOMContentLoaded", function () {
+  const savedDateId = localStorage.getItem("date_id");
+  if (savedDateId) {
+    document.getElementById("date_id").value = savedDateId;
+  }
+});
+
+  </script>
+  <!--Script para la tabla de ejercicios realizados-->
+<script src="form/tablascript.js"></script>
+
+<!--datos de calorias-->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const foodForm = document.getElementById('food-form');
+    const kcalInput = document.getElementById('kcal');
+    const dateIdInput = document.getElementById('date_id');
+
+    // Función para cargar calorías por date_id
+    async function loadCalories(dateId) {
+      try {
+        const response = await fetch(`/api/kcal/${dateId}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            // Si no hay registro, limpiar el input
+            kcalInput.value = '';
+            return;
+          }
+          throw new Error('Error al cargar las calorías.');
+        }
+
+        const data = await response.json();
+        // Cargar las calorías en el input
+        kcalInput.value = data.calories || '';
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    // Función para guardar o actualizar las calorías
+    async function saveCalories(dateId, calories) {
+      try {
+        const response = await fetch('/api/kcal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ date_id: dateId, calories }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error desconocido al guardar las calorías.');
+        }
+
+        alert('Calorías guardadas exitosamente.');
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al guardar las calorías: ' + error.message);
+      }
+    }
+
+    // Evento de envío del formulario
+    foodForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const dateId = dateIdInput.value;
+      const calories = parseInt(kcalInput.value, 10);
+
+      if (!dateId || isNaN(calories)) {
+        alert('Por favor, completa todos los campos.');
+        return;
+      }
+
+      saveCalories(dateId, calories);
+    });
+
+    // Cargar las calorías automáticamente si el date_id está disponible
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateId = urlParams.get('date_id');
+
+    if (dateId) {
+      dateIdInput.value = dateId;
+      loadCalories(dateId);
+    }
+  });
+</script>
+<script src="form/tablascript-food.js"></script>
+
+<!--datos de hidratacion-->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const waterForm = document.getElementById('water-form');
+      const waterInput = document.getElementById('water');
+      const dateIdInput = document.getElementById('date_id');
+  
+      // Función para cargar litros por date_id
+      async function loadLiters(dateId) {
+        try {
+          const response = await fetch(`/api/water/${dateId}`);
+          if (!response.ok) {
+            if (response.status === 404) {
+              // Si no hay registro, limpiar el input
+              waterInput.value = '';
+              return;
+            }
+            throw new Error('Error al cargar los litros.');
+          }
+  
+          const data = await response.json();
+          // Cargar los litros en el input
+          waterInput.value = data.liters || '';
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+  
+      // Función para guardar o actualizar los litros
+      async function saveLiters(dateId, liters) {
+        try {
+          const response = await fetch('/api/water', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ date_id: dateId, liters }),
+          });
+  
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error desconocido al guardar los litros.');
+          }
+  
+          alert('Litros guardadas exitosamente.');
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error al guardar los litros: ' + error.message);
+        }
+      }
+  
+      // Evento de envío del formulario
+      waterForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+  
+        const dateId = dateIdInput.value;
+        const liters = parseInt(waterInput.value, 10);
+  
+        if (!dateId || isNaN(liters)) {
+          alert('Por favor, completa todos los campos.');
+          return;
+        }
+  
+        saveLiters(dateId, liters);
+      });
+  
+      // Cargar los litros automáticamente si el date_id está disponible
+      const urlParams = new URLSearchParams(window.location.search);
+      const dateId = urlParams.get('date_id');
+  
+      if (dateId) {
+        dateIdInput.value = dateId;
+        loadLiters(dateId);
+      }
+    });
+  </script>
+  <script src="form/tablascript-water.js"></script>
+
+<!--datos de sueño-->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sleepForm = document.getElementById('sleep-form');
+      const sleepInput = document.getElementById('sleep');
+      const dateIdInput = document.getElementById('date_id');
+  
+      // Función para cargar horas por date_id
+      async function loadLiters(dateId) {
+        try {
+          const response = await fetch(`/api/sleep/${dateId}`);
+          if (!response.ok) {
+            if (response.status === 404) {
+              // Si no hay registro, limpiar el input
+              sleepInput.value = '';
+              return;
+            }
+            throw new Error('Error al cargar las horas.');
+          }
+  
+          const data = await response.json();
+          // Cargar las horas en el input
+          waterInput.value = data.liters || '';
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+  
+      // Función para guardar o actualizar las horas
+      async function saveHours(dateId, hours) {
+        try {
+          const response = await fetch('/api/sleep', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ date_id: dateId, hours }),
+          });
+  
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error desconocido al guardar las horas.');
+          }
+  
+          alert('Horas guardadas exitosamente.');
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error al guardar las horas: ' + error.message);
+        }
+      }
+  
+      // Evento de envío del formulario
+      sleepForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+  
+        const dateId = dateIdInput.value;
+        const hours = parseInt(sleepInput.value, 10);
+  
+        if (!dateId || isNaN(hours)) {
+          alert('Por favor, completa todos los campos.');
+          return;
+        }
+  
+        saveHours(dateId, hours);
+      });
+  
+      // Cargar las horas automáticamente si el date_id está disponible
+      const urlParams = new URLSearchParams(window.location.search);
+      const dateId = urlParams.get('date_id');
+  
+      if (dateId) {
+        dateIdInput.value = dateId;
+        loadHours(dateId);
+      }
+    });
+  </script>
+  <script src="form/tablascript-sleep.js"></script>
+</body>
+</html>

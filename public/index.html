@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Tracker - Bienvenido</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col justify-center transition-all">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div id="mobile-menu" class="hidden md:flex md:flex-col md:w-64 bg-gray-800">
+            <div class="flex flex-col flex-grow">
+                <nav class="flex-1 space-y-2">
+                    <a href="index.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Inicio</a>
+                    <a href="calendar.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Calendar</a>
+                    <a href="usuario.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Usuario</a>
+                    <a href="ejercicios.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Ejercicios</a>
+                    <a href="configuracion.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Configuracion</a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex flex-1 flex-col">
+            <!-- Navbar -->
+            <nav class="bg-gray-800 text-white">
+                <div class="flex justify-between items-center px-4 py-3">
+                    <h1 id="welcome-title" class="text-xl font-bold">Ususario</h1>
+                    <button id="mobile-menu-toggle" class="text-white bg-gray-600 md:hidden px-4 py-2 rounded flex items-center">
+                        ≡
+                    </button>
+                </div>
+            </nav>
+            <script src="sidebar.js"></script>
+
+            <!-- Page Content -->
+            <main class="flex-1 p-6">
+                <!-- Title Section -->
+                <header class="mb-6">
+                    <h1 id="welcome-message" class="text-4xl font-bold text-blue-500">¡Bienvenido a Gym Tracker!</h1>
+                    <p class="text-lg text-gray-700">Organiza y registra tu progreso diario</p>
+                </header>
+                <!-- Action Button -->
+                <div>
+                    <a href="calendar.html" 
+                       class="bg-blue-500 text-white px-6 py-3 rounded shadow hover:bg-blue-600">
+                        Ir al Calendario
+                    </a>
+                </div>
+            </main>
+        </div>
+    </div>
+   <script src="sidebar.js"></script>
+    <script>
+        // Obtener el nombre del usuario y actualizar el título
+        function fetchUserName() {
+            fetch('/api/usuario')
+                .then(response => response.json())
+                .then(user => {
+                    // Actualizar el texto con el nombre del usuario
+                    document.getElementById('welcome-message').textContent = `¡Bienvenido ${user.name} a Gym Tracker!! `;
+                })
+                .catch(err => console.error('Error al obtener los datos del usuario:', err));
+        }
+
+        // Llamar a la función al cargar la página
+        window.onload = fetchUserName;
+    </script>
+</body>
+</html>

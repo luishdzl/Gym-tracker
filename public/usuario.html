@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Tracker - Usuario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col justify-center transition-all">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div id="mobile-menu" class="hidden md:flex md:flex-col md:w-64 bg-gray-800">
+            <div class="flex flex-col flex-grow">
+                <nav class="flex-1 space-y-2">
+                    <a href="index.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Inicio</a>
+                    <a href="calendar.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Calendar</a>
+                    <a href="usuario.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Usuario</a>
+                    <a href="ejercicios.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Ejercicios</a>
+                    <a href="configuracion.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Configuracion</a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex flex-1 flex-col">
+            <!-- Navbar -->
+            <nav class="bg-gray-800 text-white">
+                <div class="flex justify-between items-center px-4 py-3">
+                    <button onclick="history.back()" class="bg-gray-700 px-3 py-2 rounded-md">
+                        ←
+                    </button>
+                    <h1 id="welcome-title" class="text-xl font-bold">Ususario</h1>
+                    <button id="mobile-menu-toggle" class="text-white bg-gray-600 md:hidden px-4 py-2 rounded flex items-center">
+                        ≡
+                    </button>
+                </div>
+            </nav>
+            <script src="sidebar.js"></script>
+            <!-- User Form -->
+            <main class="flex-1 p-6">
+                <header class="mb-6">
+                    <h1 class="text-4xl font-bold text-blue-500">Datos del Usuario</h1>
+                    <p class="text-lg text-gray-700">Administre la información personal del usuario.</p>
+                </header>
+
+                <div class="mb-6">
+                    <form id="user-form" class="bg-white shadow rounded p-6">
+                        <h2 class="text-2xl font-bold mb-4">Agregar o Actualizar Usuario</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="name" class="block text-gray-700 font-bold">Nombre</label>
+                                <input type="text" id="name" name="name" class="w-full p-2 border rounded" required>
+                            </div>
+                            <div>
+                                <label for="age" class="block text-gray-700 font-bold">Edad</label>
+                                <input type="number" id="age" name="age" class="w-full p-2 border rounded" required>
+                            </div>
+                            <div>
+                                <label for="weight" class="block text-gray-700 font-bold">Peso (kg)</label>
+                                <input type="number" id="weight" name="weight" class="w-full p-2 border rounded" required>
+                            </div>
+                            <div>
+                                <label for="height" class="block text-gray-700 font-bold">Altura (cm)</label>
+                                <input type="number" id="height" name="height" class="w-full p-2 border rounded" required>
+                            </div>
+                            <div>
+                                <label for="target_weight" class="block text-gray-700 font-bold">Peso Meta (kg)</label>
+                                <input type="number" id="target_weight" name="target_weight" class="w-full p-2 border rounded" required>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded shadow hover:bg-blue-600">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div hidden>
+                    <h2 class="text-2xl font-bold mb-4">Información del Usuario</h2>
+                    <div id="user-info" class="bg-white shadow rounded p-6">
+                        <p class="text-gray-700">Cargando información del usuario...</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+let userId = null;
+
+async function getUserInfo() {
+  try {
+    const response = await fetch('/api/usuario');
+    if (!response.ok) {
+      if (response.status === 404) {
+        // User info not found, hide user info section
+        document.getElementById('user-info').classList.add('hidden');
+        return;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Update UI elements only if data is present (prevents unnecessary error message)
+    if (data) {
+      userId = data.id;
+      document.getElementById('name').value = data.name;
+      document.getElementById('age').value = data.age;
+      document.getElementById('weight').value = data.weight;
+      document.getElementById('height').value = data.height;
+      document.getElementById('target_weight').value = data.target_weight;
+
+      document.getElementById('user-name').textContent = data.name;
+      document.getElementById('user-age').textContent = data.age;
+      document.getElementById('user-weight').textContent = data.weight;
+      document.getElementById('user-height').textContent = data.height;
+      document.getElementById('user-target_weight').textContent = data.target_weight;
+    } else {
+      // No user info found, but it's not an error (could be a new user)
+      console.log('No user information found (might be a new user).');
+    }
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+  }
+}
+
+document.getElementById('user-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const userData = {
+    id: userId,
+    name: document.getElementById('name').value,
+    age: document.getElementById('age').value,
+    weight: document.getElementById('weight').value,
+    height: document.getElementById('height').value,
+    target_weight: document.getElementById('target_weight').value
+  };
+
+  const method = userId ? 'PUT' : 'POST';
+
+  try {
+    const response = await fetch('/api/usuario', {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(userData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    if (method === 'POST') {
+      userId = data.id;
+    }
+    alert('Datos del usuario actualizados');
+    getUserInfo(); // Call getUserInfo to refresh UI with updated data
+  } catch (error) {
+    console.error('Error updating user data:', error);
+    alert("Error al actualizar los datos del usuario: " + error.message);
+  }
+});
+
+window.addEventListener('load', getUserInfo);
+    </script>
+</body>
+</html>
