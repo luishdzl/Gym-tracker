@@ -605,6 +605,60 @@ app.get('/api/analytics/daily/:date_id', (req, res) => {
   });
 });
 
+// Nuevo endpoint para análisis de progreso avanzado
+app.get('/api/analytics/progress', (req, res) => {
+  // Se espera que se pase el parámetro "range" (day, week o month)
+  const range = req.query.range || 'day';
+  const today = new Date();
+  let startDate;
+
+  // Calcula la fecha de inicio según el rango solicitado
+  if (range === 'day') {
+    // Solo registros de hoy (formato YYYY-MM-DD)
+    startDate = today.toISOString().slice(0, 10);
+  } else if (range === 'week') {
+    const past = new Date();
+    past.setDate(today.getDate() - 7);
+    startDate = past.toISOString().slice(0, 10);
+  } else if (range === 'month') {
+    const past = new Date();
+    past.setDate(today.getDate() - 30);
+    startDate = past.toISOString().slice(0, 10);
+  } else {
+    return res.status(400).json({ error: "El rango debe ser 'day', 'week' o 'month'" });
+  }
+
+  // Fecha de fin es hoy
+  const endDate = today.toISOString().slice(0, 10);
+
+  // Consulta SQL:
+  // Se unen las tablas workouts, date y exercise_names para obtener la fecha y el nombre del ejercicio,
+  // y se calculan algunos agregados (promedio de peso, total de repeticiones, total de series y promedio de RIR)
+  const query = `
+    SELECT d.date,
+           e.name as exercise,
+           AVG(w.weight) AS avgWeight,
+           SUM(w.reps) AS totalReps,
+           SUM(w.sets) AS totalSets,
+           AVG(w.rir) AS avgRir
+    FROM workouts w
+    JOIN date d ON w.date_id = d.id
+    JOIN exercise_names e ON w.exercise_id = e.id
+    WHERE d.date BETWEEN ? AND ?
+    GROUP BY d.date, w.exercise_id
+    ORDER BY d.date ASC
+  `;
+
+  db.all(query, [startDate, endDate], (err, rows) => {
+    if (err) {
+      console.error("Error en la consulta de progreso:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+
 // Ruta raíz para servir el frontend
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

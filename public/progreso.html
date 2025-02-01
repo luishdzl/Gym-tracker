@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Progreso</title>
+  <link href="style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col justify-center transition-all">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <div id="mobile-menu" class="hidden md:flex md:flex-col md:w-64 bg-gray-800">
+      <div class="flex flex-col flex-grow">
+        <nav class="flex-1 space-y-2">
+          <a href="index.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Inicio</a>
+          <a href="calendar.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Calendar</a>
+          <a href="progreso.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Progreso</a>
+          <a href="usuario.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Usuario</a>
+          <a href="ejercicios.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Ejercicios</a>
+          <a href="configuracion.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded">Configuracion</a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex flex-1 flex-col">
+      <!-- Navbar -->
+      <nav class="bg-gray-800 text-white">
+        <div class="flex justify-between items-center px-4 py-3">
+          <button onclick="history.back()" class="bg-gray-700 px-3 py-2 rounded-md">←</button>
+          <h1 id="welcome-title" class="text-xl font-bold">Progreso</h1>
+          <button id="mobile-menu-toggle" class="text-white bg-gray-600 md:hidden px-4 py-2 rounded flex items-center">≡</button>
+        </div>
+      </nav>
+      <script src="sidebar.js"></script>
+
+      <!-- Page Content -->
+      <main class="flex-1 p-6">
+        <div id="range-buttons" class="mb-4 flex space-x-2">
+          <button id="btn-day" class="bg-blue-500 text-white px-3 py-2 rounded">Día</button>
+          <button id="btn-week" class="bg-blue-500 text-white px-3 py-2 rounded">Semana</button>
+          <button id="btn-month" class="bg-blue-500 text-white px-3 py-2 rounded">Mes</button>
+        </div>
+      
+        <!-- Contenedor que agrupa la tabla y el gráfico -->
+        <div class="flex flex-col md:flex-row md:space-x-4">
+          <!-- Contenedor para la tabla de datos -->
+          <div id="progress-container" class="md:w-1/2">
+            <h2 class="text-2xl font-bold mb-4">Progreso de Ejercicios (Tabla)</h2>
+            <table id="progress-table" class="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th class="border p-2">Fecha</th>
+                  <th class="border p-2">Ejercicio</th>
+                  <th class="border p-2">Peso Promedio (kg)</th>
+                  <th class="border p-2">Total Reps</th>
+                  <th class="border p-2">Total Series</th>
+                  <th class="border p-2">RIR Promedio</th>
+                </tr>
+              </thead>
+              <tbody id="progress-data">
+                <!-- Los datos se insertarán dinámicamente -->
+              </tbody>
+            </table>
+            <!-- Controles de paginación -->
+            <div id="pagination-controls" class="mt-4 flex justify-center space-x-2">
+              <!-- Botones se crearán dinámicamente -->
+            </div>
+          </div>
+      
+          <!-- Contenedor para el gráfico -->
+          <div id="chart-container" class="mt-8 md:mt-0 md:w-1/2">
+            <h2 class="text-2xl font-bold mb-4">Progreso de Ejercicios (Gráfico)</h2>
+            <canvas id="progressChart"></canvas>
+          </div>
+      
+      </main>
+    </div>
+  </div>
+
+  <script src="sidebar.js"></script>
+  <!-- Incluye Chart.js -->
+  <script src="external/statistic/dist/chart.umd.js"></script>
+  <script>
+    // Variables globales para paginación y rango
+    let progressData = []; // Se almacenan los datos obtenidos
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let currentRange = 'week';
+
+    // Función para renderizar la tabla de progreso paginada
+    function renderTable(data) {
+      const tbody = document.getElementById('progress-data');
+      tbody.innerHTML = '';
+
+      // Calcular índices para la página actual
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = data.slice(startIndex, endIndex);
+
+      pageData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="border p-2">${item.date}</td>
+          <td class="border p-2">${item.exercise}</td>
+          <td class="border p-2">${item.avgWeight ? item.avgWeight.toFixed(1) : '-'}</td>
+          <td class="border p-2">${item.totalReps || '-'}</td>
+          <td class="border p-2">${item.totalSets || '-'}</td>
+          <td class="border p-2">${item.avgRir ? item.avgRir.toFixed(1) : '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderPaginationControls(data.length);
+    }
+
+    // Función para renderizar los controles de paginación
+    function renderPaginationControls(totalItems) {
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      const paginationDiv = document.getElementById('pagination-controls');
+      paginationDiv.innerHTML = '';
+
+      // Botón "Anterior"
+      const btnPrev = document.createElement('button');
+      btnPrev.textContent = 'Anterior';
+      btnPrev.disabled = (currentPage === 1);
+      btnPrev.className = 'bg-gray-300 px-3 py-1 rounded';
+      btnPrev.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable(progressData);
+        }
+      });
+      paginationDiv.appendChild(btnPrev);
+
+      // Botones para cada página
+      for (let i = 1; i <= totalPages; i++) {
+        const btnPage = document.createElement('button');
+        btnPage.textContent = i;
+        btnPage.className = 'bg-gray-300 px-3 py-1 rounded';
+        if (i === currentPage) {
+          btnPage.classList.add('bg-blue-500', 'text-white');
+        }
+        btnPage.addEventListener('click', () => {
+          currentPage = i;
+          renderTable(progressData);
+        });
+        paginationDiv.appendChild(btnPage);
+      }
+
+      // Botón "Siguiente"
+      const btnNext = document.createElement('button');
+      btnNext.textContent = 'Siguiente';
+      btnNext.disabled = (currentPage === totalPages);
+      btnNext.className = 'bg-gray-300 px-3 py-1 rounded';
+      btnNext.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable(progressData);
+        }
+      });
+      paginationDiv.appendChild(btnNext);
+    }
+
+    // Función para agrupar los datos por ejercicio y preparar la data para Chart.js usando totalReps
+    function prepareChartData(data) {
+      const grouped = {};
+      const allDates = new Set();
+
+      // Agrupar por ejercicio: usamos totalReps
+      data.forEach(item => {
+        if (!grouped[item.exercise]) {
+          grouped[item.exercise] = {};
+        }
+        grouped[item.exercise][item.date] = item.totalReps; 
+        allDates.add(item.date);
+      });
+
+      // Convertir el Set a array y ordenarlo
+      const labels = Array.from(allDates).sort();
+
+      // Crear datasets para cada ejercicio
+      const datasets = Object.keys(grouped).map((exercise) => {
+        // Array con un valor por cada fecha
+        const dataPoints = labels.map(label => grouped[exercise][label] || 0);
+        // Color aleatorio
+        const color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`;
+        return {
+          label: exercise,
+          data: dataPoints,
+          borderColor: color,
+          backgroundColor: color,
+          fill: false,
+          tension: 0.1
+        };
+      });
+
+      return { labels, datasets };
+    }
+
+    // Función para renderizar el gráfico con Chart.js
+    function renderChart(chartData) {
+      const ctx = document.getElementById('progressChart').getContext('2d');
+      // Si ya existe un chart, destruirlo
+      if (window.progressChart && typeof window.progressChart.destroy === 'function') {
+        window.progressChart.destroy();
+      }
+      window.progressChart = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Fecha'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Total Reps'
+              },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top'
+            },
+            title: {
+              display: true,
+              text: 'Progreso de Repeticiones'
+            }
+          }
+        }
+      });
+    }
+
+    // Función para consultar el endpoint según el rango seleccionado
+    function fetchProgress(range) {
+      currentRange = range;
+      currentPage = 1; // Reiniciar a la primera página
+      fetch(`http://localhost:3000/api/analytics/progress?range=${range}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error al obtener los datos de progreso');
+          }
+          return response.json();
+        })
+        .then(data => {
+          progressData = data; // Almacenar en la variable global
+          // Renderizar tabla y gráfico
+          renderTable(progressData);
+          const chartData = prepareChartData(progressData);
+          renderChart(chartData);
+        })
+        .catch(error => {
+          console.error(error);
+          document.getElementById('progress-container').innerHTML = `<p>Error: ${error.message}</p>`;
+        });
+    }
+
+    // Configurar botones para cambiar el rango
+    document.getElementById('btn-day').addEventListener('click', () => {
+      fetchProgress('day');
+    });
+    document.getElementById('btn-week').addEventListener('click', () => {
+      fetchProgress('week');
+    });
+    document.getElementById('btn-month').addEventListener('click', () => {
+      fetchProgress('month');
+    });
+
+    // Al cargar el DOM, se consulta por defecto el rango 'week'
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchProgress('week');
+    });
+  </script>
+</body>
+</html>
