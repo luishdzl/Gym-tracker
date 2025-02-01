@@ -659,6 +659,132 @@ app.get('/api/analytics/progress', (req, res) => {
 });
 
 
+const fs = require('fs');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' }); // Carpeta temporal para archivos importados
+
+// Endpoint para exportar la base de datos
+app.get('/api/export', (req, res) => {
+  const dbPath = path.join(__dirname, 'gymtracker.db');
+  // Verifica que el archivo exista
+  fs.access(dbPath, fs.constants.F_OK, (err) => {
+    if (err) {
+      console.error('Base de datos no encontrada:', err);
+      return res.status(500).json({ error: 'Base de datos no encontrada' });
+    }
+    res.download(dbPath, 'gymtracker.sqlite', (err) => {
+      if (err) {
+        console.error('Error al enviar el archivo:', err);
+      }
+    });
+  });
+});
+
+// Endpoint para importar la base de datos
+// Endpoint para importar la base de datos
+app.post('/api/import', upload.single('database'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No se subió ningún archivo' });
+  }
+
+  const tempPath = req.file.path;
+
+  // Validar extensión del archivo
+  if (!req.file.originalname.endsWith('.sqlite')) {
+    fs.unlink(tempPath, () => {});
+    return res.status(400).json({ error: 'El archivo debe tener extensión .sqlite' });
+  }
+
+  // Intentar abrir la base de datos temporal para validarla
+  const tempDb = new sqlite3.Database(tempPath, sqlite3.OPEN_READONLY, (err) => {
+    if (err) {
+      fs.unlink(tempPath, () => {});
+      return res.status(400).json({ error: 'El archivo no es una base de datos SQLite válida' });
+    }
+
+    // Conectar a la base de datos principal
+    const mainDb = new sqlite3.Database(path.join(__dirname, 'gymtracker.db'));
+
+    // Desactivar claves foráneas
+    mainDb.run('PRAGMA foreign_keys = OFF');
+
+    // Lista de tablas a copiar
+    const tables = ['workouts', 'kcal', 'sleep', 'water', 'date', 'usuario', 'exercise_names'];
+
+    // 1. Vaciar tablas principales
+    mainDb.serialize(() => {
+      tables.forEach((table) => {
+        mainDb.run(`DELETE FROM ${table}`);
+      });
+
+      // 2. Copiar datos desde la base de datos temporal
+      tempDb.serialize(() => {
+        tempDb.each("SELECT name FROM sqlite_master WHERE type='table'", (err, row) => {
+          if (!tables.includes(row.name)) return;
+
+          const stmt = tempDb.prepare(`SELECT * FROM ${row.name}`);
+          stmt.each((err, rowData) => {
+            const columns = Object.keys(rowData).join(',');
+            const placeholders = Object.keys(rowData).fill('?').join(',');
+            mainDb.run(
+              `INSERT INTO ${row.name} (${columns}) VALUES (${placeholders})`,
+              Object.values(rowData),
+              (err) => {
+                if (err) console.error(`Error insertando en ${row.name}:`, err);
+              }
+            );
+          });
+          stmt.finalize();
+        }, (err) => {
+          // Finalizar procesos
+          tempDb.close();
+          mainDb.run('PRAGMA foreign_keys = ON', () => {
+            mainDb.close();
+            fs.unlink(tempPath, () => {});
+            res.status(200).json({ message: 'Base de datos importada correctamente' });
+          });
+        });
+      });
+    });
+  });
+});
+// Endpoint para borrar los datos de la base de datos (vaciar tablas)
+app.delete('/api/delete', (req, res) => {
+  db.serialize(() => {
+    // Si usas claves foráneas, es recomendable deshabilitarlas temporalmente
+    db.run('PRAGMA foreign_keys = OFF');
+
+    // Vaciar cada tabla. El orden es importante si hay relaciones de clave foránea.
+    db.run('DELETE FROM workouts', (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+    });
+    db.run('DELETE FROM kcal', (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+    });
+    db.run('DELETE FROM sleep', (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+    });
+    db.run('DELETE FROM water', (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+    });
+    db.run('DELETE FROM date', (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+    });
+    db.run('DELETE FROM exercise_names', (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+    });
+    db.run('DELETE FROM usuario', (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      // Rehabilitar las claves foráneas
+      db.run('PRAGMA foreign_keys = ON');
+      res.status(200).json({ message: 'Datos de la base de datos borrados correctamente.' });
+    });
+  });
+});
+
+
+
+
 // Ruta raíz para servir el frontend
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
