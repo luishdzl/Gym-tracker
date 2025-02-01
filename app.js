@@ -19,6 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Crear tablas si no existen
 db.serialize(() => {
+  // Se agregaron nuevos campos: water_goal, sleep_goal y kcal_goal
   db.run(`
     CREATE TABLE IF NOT EXISTS usuario (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +27,10 @@ db.serialize(() => {
       age INTEGER,
       weight REAL,
       height REAL,
-      target_weight REAL
+      target_weight REAL,
+      water_goal REAL,
+      sleep_goal REAL,
+      kcal_goal INTEGER
     )
   `);
 
@@ -87,17 +91,19 @@ db.serialize(() => {
 });
 
 
-// Rutas del usuario
-app.post('/api/usuario', (req, res) => {
-  const { name, age, weight, height, target_weight } = req.body;
+// Rutas del usuario (actualizadas para incluir metas)
 
-  if (!name || !age || !weight || !height || !target_weight) {
+// Crear usuario con metas
+app.post('/api/usuario', (req, res) => {
+  const { name, age, weight, height, target_weight, water_goal, sleep_goal, kcal_goal } = req.body;
+
+  if (!name || !age || !weight || !height || !target_weight || water_goal == null || sleep_goal == null || kcal_goal == null) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
 
   db.run(
-    `INSERT INTO usuario (name, age, weight, height, target_weight) VALUES (?, ?, ?, ?, ?)`,
-    [name, age, weight, height, target_weight],
+    `INSERT INTO usuario (name, age, weight, height, target_weight, water_goal, sleep_goal, kcal_goal) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [name, age, weight, height, target_weight, water_goal, sleep_goal, kcal_goal],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
       res.status(201).json({ id: this.lastID });
@@ -105,29 +111,31 @@ app.post('/api/usuario', (req, res) => {
   );
 });
 
+// Obtener el último usuario registrado
 app.get('/api/usuario', (req, res) => {
   db.get('SELECT * FROM usuario ORDER BY id DESC LIMIT 1', [], (err, row) => {
-      if (err) {
-          console.error("Error en la consulta a la base de datos:", err); //Loguea el error en el servidor
-          return res.status(500).json({ error: 'Error al acceder a la base de datos.' }); //Responde con un error 500
-      }
-      if (!row) { //Si no hay usuario responde con un 404
-          return res.status(404).json();
-      }
-      res.json(row);
+    if (err) {
+      console.error("Error en la consulta a la base de datos:", err);
+      return res.status(500).json({ error: 'Error al acceder a la base de datos.' });
+    }
+    if (!row) {
+      return res.status(404).json();
+    }
+    res.json(row);
   });
 });
 
+// Actualizar usuario (incluyendo metas)
 app.put('/api/usuario', (req, res) => {
-  const { id, name, age, weight, height, target_weight } = req.body;
+  const { id, name, age, weight, height, target_weight, water_goal, sleep_goal, kcal_goal } = req.body;
 
-  if (!id || !name || !age || !weight || !height || !target_weight) {
+  if (!id || !name || !age || !weight || !height || !target_weight || water_goal == null || sleep_goal == null || kcal_goal == null) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
 
   db.run(
-    `UPDATE usuario SET name = ?, age = ?, weight = ?, height = ?, target_weight = ? WHERE id = ?`,
-    [name, age, weight, height, target_weight, id],
+    `UPDATE usuario SET name = ?, age = ?, weight = ?, height = ?, target_weight = ?, water_goal = ?, sleep_goal = ?, kcal_goal = ? WHERE id = ?`,
+    [name, age, weight, height, target_weight, water_goal, sleep_goal, kcal_goal, id],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
       res.status(200).json({ message: 'Usuario actualizado' });
@@ -150,7 +158,7 @@ app.delete('/api/usuario', (req, res) => {
 
 // Rutas de ejercicios
 app.post('/api/workouts', (req, res) => {
-  const { date_id, exercise_id, weight, reps, sets, rir} = req.body;
+  const { date_id, exercise_id, weight, reps, sets, rir } = req.body;
   if (!date_id || !exercise_id || !weight || !reps || !sets || !rir) {  
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
@@ -221,8 +229,6 @@ app.get('/api/workouts/date/:date_id', (req, res) => {
     }
   );
 });
-
-
 
 // Rutas para exercise_names
 
@@ -350,9 +356,9 @@ app.get('/api/dates/:date', (req, res) => {
   );
 });
 
+// Rutas "genéricas" para datos
 
-//datos genericos
-// Obtener calorías por date_id
+// Calorías
 app.get('/api/kcal/:date_id', (req, res) => {
   const { date_id } = req.params;
 
@@ -371,22 +377,19 @@ app.get('/api/kcal/:date_id', (req, res) => {
     }
   );
 });
-// Obtener todos los calorias de ejercicios
+
 app.get('/api/kcal', (req, res) => {
   db.all(`SELECT * FROM kcal`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
+
 app.get('/api/kcal/date/:date_id', (req, res) => {
   const { date_id } = req.params;
 
   db.all(
-    `SELECT 
-       kcal.id, 
-       kcal.calories
-     FROM kcal
-     WHERE kcal.date_id = ?`,
+    `SELECT kcal.id, kcal.calories FROM kcal WHERE kcal.date_id = ?`,
     [date_id],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -394,7 +397,7 @@ app.get('/api/kcal/date/:date_id', (req, res) => {
     }
   );
 });
-// Guardar o actualizar calorías
+
 app.post('/api/kcal', (req, res) => {
   const { date_id, calories } = req.body;
 
@@ -420,10 +423,7 @@ app.post('/api/kcal', (req, res) => {
   );
 });
 
-
-
-//datos genericos
-// Obtener litros por date_id
+// Agua
 app.get('/api/water/:date_id', (req, res) => {
   const { date_id } = req.params;
 
@@ -432,32 +432,29 @@ app.get('/api/water/:date_id', (req, res) => {
     [date_id],
     (err, row) => {
       if (err) {
-        console.error('Error al obtener calorías:', err);
+        console.error('Error al obtener agua:', err);
         return res.status(500).json({ error: 'Error al acceder a la base de datos.' });
       }
       if (!row) {
-        return res.status(404).json({ error: 'No se encontraron los litros para esta fecha.' });
+        return res.status(404).json({ error: 'No se encontraron litros para esta fecha.' });
       }
       res.json(row);
     }
   );
 });
-// Obtener todos los nombres de agua
+
 app.get('/api/water', (req, res) => {
   db.all(`SELECT * FROM water`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
+
 app.get('/api/water/date/:date_id', (req, res) => {
   const { date_id } = req.params;
 
   db.all(
-    `SELECT 
-       water.id, 
-       water.liters
-     FROM water
-     WHERE water.date_id = ?`,
+    `SELECT water.id, water.liters FROM water WHERE water.date_id = ?`,
     [date_id],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -465,7 +462,7 @@ app.get('/api/water/date/:date_id', (req, res) => {
     }
   );
 });
-// Guardar o actualizar calorías
+
 app.post('/api/water', (req, res) => {
   const { date_id, liters } = req.body;
 
@@ -491,12 +488,7 @@ app.post('/api/water', (req, res) => {
   );
 });
 
-
-
-
-
-//datos genericos
-// Obtener litros por date_id
+// Sueño
 app.get('/api/sleep/:date_id', (req, res) => {
   const { date_id } = req.params;
 
@@ -515,22 +507,19 @@ app.get('/api/sleep/:date_id', (req, res) => {
     }
   );
 });
-// Obtener todos los calorias de ejercicios
+
 app.get('/api/sleep', (req, res) => {
   db.all(`SELECT * FROM sleep`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
+
 app.get('/api/sleep/date/:date_id', (req, res) => {
   const { date_id } = req.params;
 
   db.all(
-    `SELECT 
-       sleep.id, 
-       sleep.hours
-     FROM sleep
-     WHERE sleep.date_id = ?`,
+    `SELECT sleep.id, sleep.hours FROM sleep WHERE sleep.date_id = ?`,
     [date_id],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -538,7 +527,7 @@ app.get('/api/sleep/date/:date_id', (req, res) => {
     }
   );
 });
-// Guardar o actualizar horas
+
 app.post('/api/sleep', (req, res) => {
   const { date_id, hours } = req.body;
 
@@ -564,6 +553,57 @@ app.post('/api/sleep', (req, res) => {
   );
 });
 
+// Nuevo endpoint de análisis diario
+app.get('/api/analytics/daily/:date_id', (req, res) => {
+  const { date_id } = req.params;
+
+  // Asumimos que el usuario a analizar es el último registrado
+  db.get('SELECT * FROM usuario ORDER BY id DESC LIMIT 1', [], (err, user) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    db.get(`SELECT liters FROM water WHERE date_id = ?`, [date_id], (err, waterRow) => {
+      if (err) return res.status(500).json({ error: err.message });
+      db.get(`SELECT hours FROM sleep WHERE date_id = ?`, [date_id], (err, sleepRow) => {
+        if (err) return res.status(500).json({ error: err.message });
+        db.get(`SELECT calories FROM kcal WHERE date_id = ?`, [date_id], (err, kcalRow) => {
+          if (err) return res.status(500).json({ error: err.message });
+
+          // Si no existen registros, asumimos cero
+          const water = waterRow ? waterRow.liters : 0;
+          const sleep = sleepRow ? sleepRow.hours : 0;
+          const kcal = kcalRow ? kcalRow.calories : 0;
+
+          // Usamos las metas almacenadas en el usuario; en caso de no tenerlas se usan valores predeterminados
+          const waterGoal = user.water_goal || 2;
+          const sleepGoal = user.sleep_goal || 8;
+          const kcalGoal = user.kcal_goal || 1500;
+
+          const waterFeedback = water >= waterGoal
+            ? "¡Excelente! Has alcanzado tu meta de agua."
+            : `Te faltan ${(waterGoal - water).toFixed(1)} litros para cumplir tu meta.`;
+
+          const sleepFeedback = sleep >= sleepGoal
+            ? "¡Buen trabajo! Has cumplido tu meta de sueño."
+            : `Te faltan ${(sleepGoal - sleep).toFixed(1)} horas de sueño.`;
+
+          const kcalFeedback = kcal <= kcalGoal
+            ? "Perfecto, tu consumo calórico está dentro del rango."
+            : "Cuidado, has superado el consumo recomendado de calorías.";
+
+          res.json({
+            water: waterFeedback,
+            sleep: sleepFeedback,
+            kcal: kcalFeedback,
+            waterValue: water,
+            sleepValue: sleep,
+            kcalValue: kcal
+          });
+        });
+      });
+    });
+  });
+});
 
 // Ruta raíz para servir el frontend
 app.get('/', (req, res) => {

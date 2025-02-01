@@ -52,8 +52,10 @@
                     <button id="open-sleep-modal" class="bg-purple-500 text-white py-2 px-4 rounded w-full sm:w-auto">
                         Sueño
                     </button>
+                    <button id="open-daily-feedback" class=" bg-green-100 text-green-800 py-2 px-4 rounded w-full sm:w-auto">
+                      Estadistica
+                  </button>    
                 </div>
-
 
     <!-- Sección de modales -->
     <section class="apear-modal p-2 flex flex-wrap gap-4 justify-center">
@@ -180,36 +182,54 @@
                    </div>
         </div>
 
-        <!-- Modal de Sueño -->
-        <div id="sleep-modal" class="hidden bg-white p-4 rounded shadow-lg w-full max-w-md">
-            <button id="close-sleep-modal" type="button" class="justify-self-end rounded-md text-gray-300 bg-red-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
-                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-              </button>
-            <h2 class="text-xl font-bold mb-4">Registrar Sueño</h2>
-            <form id="sleep-form">
-                <input type="number" hidden value="" class="Date_to_database" name="date_id" id="date_id">
-                <span class="block text-sm font-medium text-slate-700">¿Cuantas horas dormiste?</span>
-                <input type="number" step="0.1" placeholder="Horas de sueño" id="sleep" class="border p-2 mb-2 w-full">
-                <button type="submit" class="bg-purple-500 text-white py-2 px-4 rounded w-full">Guardar</button>
-            </form>
-               <!-- Datos previamente ingresados -->
-               <div class="flex-1 p-4 border rounded">
-                <h2 class="text-lg font-semibold">Datos Previamente Ingresados</h2>
-                    <table class="w-full border-collapse border border-slate-300 mt-4">
-                       <thead class="bg-gray-100">
-                  <tr>
-                 <th class="border border-slate-300 p-2">Litros de agua</th>
-                         </tr>
-                   </thead>
-                       <tbody id="data-list-sleep">
-                     <!-- Aquí se agregarán los datos dinámicamente -->
-                       </tbody>
-                  </table>
-                  </div>        
-        </div>
+
+
+                <!-- Modal de Sueño -->
+                <div id="sleep-modal" class="hidden bg-white p-4 rounded shadow-lg w-full max-w-md">
+                  <button id="close-sleep-modal" type="button" class="justify-self-end rounded-md text-gray-300 bg-red-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
+                      <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  <h2 class="text-xl font-bold mb-4">Registrar Sueño</h2>
+                  <form id="sleep-form">
+                      <input type="number" hidden value="" class="Date_to_database" name="date_id" id="date_id">
+                      <span class="block text-sm font-medium text-slate-700">¿Cuantas horas dormiste?</span>
+                      <input type="number" step="0.1" placeholder="Horas de sueño" id="sleep" class="border p-2 mb-2 w-full">
+                      <button type="submit" class="bg-purple-500 text-white py-2 px-4 rounded w-full">Guardar</button>
+                  </form>
+                     <!-- Datos previamente ingresados -->
+                     <div class="flex-1 p-4 border rounded">
+                      <h2 class="text-lg font-semibold">Datos Previamente Ingresados</h2>
+                          <table class="w-full border-collapse border border-slate-300 mt-4">
+                             <thead class="bg-gray-100">
+                        <tr>
+                       <th class="border border-slate-300 p-2">Horas dormidas</th>
+                               </tr>
+                         </thead>
+                             <tbody id="data-list-sleep">
+                           <!-- Aquí se agregarán los datos dinámicamente -->
+                             </tbody>
+                        </table>
+                        </div>        
+              </div>
+
+<!-- Modal de statistic -->
+<div id="daily-feedback" class="hidden bg-white p-4 rounded shadow-lg w-full max-w-md">
+  <button id="close-daily-feedback" type="button" class="justify-self-end rounded-md text-gray-300 bg-red-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
+    <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  </button>
+  <h2 class="text-xl font-bold mb-4">Datos Estadística</h2>
+  <!-- Contenedor para el feedback -->
+  <div id="daily-feedback-message" class="daily-feedback-message">
+    <!-- Aquí se insertará el mensaje del análisis -->
+  </div>
+</div>
+
     </section>
+    
                     <!-- agregar ejercicio -->
                     <div id="add-exercise" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
                         
@@ -604,5 +624,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   </script>
   <script src="form/tablascript-sleep.js"></script>
+  <script src="form/statistic.js"></script>
 </body>
 </html>
